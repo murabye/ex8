@@ -83,13 +83,13 @@ namespace ex8
                 var relation = Console.ReadLine().Trim().Split(' ');       // читает и делит
                 var j = 0;
 
+                if (relation.Length == 0) continue;
                 foreach (var point in relation)                     // для каждой из найденных
                 {
                     if (point[0] == letter) throw new ArgumentException("Нет задачи графа с петлей");
-                    if (point.Length > 1) throw new ArgumentException("Более одного символа вершина не именуется");
-                    if ((int)point[0] - 'A' >= number) throw new ArgumentException("Не обнаружено вершины");
+                    if (Int32.Parse(point) > number) throw new ArgumentException("Нет такой вершины");
 
-                    list[i].Add(int.Parse(point[0].ToString()) - 1);
+                    list[i].Add(Int32.Parse(point) - 1);
                 }
             }
 
@@ -98,6 +98,7 @@ namespace ex8
             FindEulerPath((int)odd.GetValue(0));
 
             if (eq) ans.Add((int)odd.GetValue(1));
+            else ans.RemoveAt(0);
             // нужен еще случай, когда нечетные степени не были соединены
             
             Console.WriteLine("Ответ: " + String.Join(", ", ans.ToArray()));
