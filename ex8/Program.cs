@@ -30,9 +30,9 @@ namespace ex8
                 {
                     if (point[0] == letter) throw new ArgumentException("Нет задачи графа с петлей");
                     if (point.Length > 1) throw new ArgumentException("Более одного символа вершина не именуется");
-                    if ((int)point[0] > 15) throw new ArgumentException("Превышение заданного алфавита");
+                    if ((int)point[0] - 'A'> 15) throw new ArgumentException("Превышение заданного алфавита");
 
-                    var res = (ulong)0 << (point[0] - 'A');
+                    var res = (ulong)1 << (point[0] - 'A');
                     list[i] = list[i] | res;
                 }
             }
