@@ -25,18 +25,21 @@ namespace ex8
             for (var i = 0; i < number; i++)
             {
                 list[i] = 0;                                        // обнуление текущего
+                var letter = (char)((int)'A' + i);
 
-                Console.Write("Введите через пробел вершины, с которыми связана данная ({0}): ", i+1);
-                var relation = (Console.ReadLine()).Split(' ');     // читает и делит
+                Console.Write("Введите через пробел вершины, с которыми связана данная ({0}): ", letter);
+                var relation = (Console.ReadLine()).Trim().Split(' ');     // читает и делит
 
                 foreach (var point in relation)                     // для каждой из найденных
                 {
-                    ulong res;
-                    if (ulong.TryParse(point, out res))             // попробовать перевести
-                        list[i] = list[i] | res;                    // бит
-                    else throw new Exception("Неверный ввод");
+                    var res = (ulong)(point[0]) - (ulong)'A' + 1;
+                    list[i] = list[i] | res;
                 }
             }
+
+
+
+
 
             OC.Stay();
         }
