@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MyLib;
 
 namespace ex8
@@ -32,7 +28,11 @@ namespace ex8
 
                 foreach (var point in relation)                     // для каждой из найденных
                 {
-                    var res = (ulong)(point[0]) - (ulong)'A' + 1;
+                    if (point[0] == letter) throw new ArgumentException("Нет задачи графа с петлей");
+                    if (point.Length > 1) throw new ArgumentException("Более одного символа вершина не именуется");
+                    if ((int)point[0] > 15) throw new ArgumentException("Превышение заданного алфавита");
+
+                    var res = (ulong)0 << (point[0] - 'A');
                     list[i] = list[i] | res;
                 }
             }
