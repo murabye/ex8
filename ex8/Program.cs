@@ -6,21 +6,21 @@ namespace ex8
 {
     internal class Program
     {
-        private static int[][] list = new int[0][];     // граф
-        private static List<int> ans;
-        
+        private static List<int>[] list = new List<int>[0];     // граф
+        private static List<int> ans = new List<int>();
+        private static bool eq = false;
+
         private static void FindEulerPath(int num)
         {
             // где num - номер соответствующей вершины графа
-
-            for (var i = 0; i < list[num].Length; i++)
+            for (var i = 0; i < list[num].Count; i++)
                 if (list[num][i] != -1)
                 {
                     var path = list[num][i];
 
                     // удаление ребра из графа
                     list[num][i] = -1;
-                    for (var j = 0; j < list[path].Length; j++)
+                    for (var j = 0; j < list[path].Count; j++)
                     {
                         if (list[path][j] != num) continue;
 
@@ -30,8 +30,7 @@ namespace ex8
 
                     FindEulerPath(path);
                 }
-
-                        
+            
             ans.Add(num + 1);
 
         }
@@ -39,21 +38,31 @@ namespace ex8
         {
             var odd = new Queue<int>();          // нечетные вершины
 
+            // поиск нечетных вершин
             for (var i = 0; i < list.Length; i++)
-                if (list[i].Length % 2 != 0)
+                if (list[i].Count % 2 != 0)
                     odd.Enqueue(i);
             if (odd.Count != 2) throw new ArgumentException("В графе нет эйлеровой цепи");
 
-            foreach (var point in odd)
+
+            var ch1 = odd.Dequeue();
+            var ch2 = odd.Peek();
+            odd.Enqueue(ch1);
+
+            // если нечетные вершины соединены, то удалить связь
+            for (var i = 0; i < list[ch1].Count; i++)
             {
-                var arr = (int[])list[point].Clone();
+                if (list[ch1][i] != ch2) continue;
 
-                list[point] = new int[arr.Length + 1];
-                for (var i = 0; i < arr.Length; i++)
-                    list[point][i] = arr[i];
-
-                list[point][arr.Length] = point;
+                list[ch1].Remove(ch2);
+                list[ch2].Remove(ch1);
+                eq = true;
+                return odd;
             }
+
+            // иначе добавить связь
+            list[ch1].Add(ch2);
+            list[ch2].Add(ch1);
 
             return odd;
         }
@@ -62,16 +71,16 @@ namespace ex8
         {
             // инициализация списка
             var number = Ask.Num("Введите количество вершин: ", 1);
-            list = new int[number][];
+            list = new List<int>[number];
 
             // чтение списка
             for (var i = 0; i < number; i++)
             {
                 var letter = i + 1;
+                list[i] = new List<int>();
 
                 Console.Write("Введите через пробел вершины, с которыми связана ({0}): ", letter);
                 var relation = Console.ReadLine().Trim().Split(' ');       // читает и делит
-                list[i] = new int[relation.Length];                       // готовит массив
                 var j = 0;
 
                 foreach (var point in relation)                     // для каждой из найденных
@@ -80,19 +89,18 @@ namespace ex8
                     if (point.Length > 1) throw new ArgumentException("Более одного символа вершина не именуется");
                     if ((int)point[0] - 'A' >= number) throw new ArgumentException("Не обнаружено вершины");
 
-                    list[i][j++] = int.Parse(point[0].ToString());
+                    list[i].Add(int.Parse(point[0].ToString()) - 1);
                 }
             }
 
 
             var odd = Check().ToArray();
-            FindEulerPath(0);
-            var ans1 = odd[0] + " " + odd[1];
-            var ans2 = odd[1] + " " + odd[0];
+            FindEulerPath((int)odd.GetValue(0));
 
-            // ans.Remove(ans.IndexOf(ans1) > -1 ? ans.IndexOf(ans1) : ans.IndexOf(ans2), ans1.Length);
-
-            Console.WriteLine("Ответ: " + ans);
+            if (eq) ans.Add((int)odd.GetValue(1));
+            // нужен еще случай, когда нечетные степени не были соединены
+            
+            Console.WriteLine("Ответ: " + String.Join(", ", ans.ToArray()));
             OC.Stay();
         }
     }
