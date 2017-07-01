@@ -5,7 +5,7 @@ namespace ex8
 {
     internal class Program
     {
-        private static char[][] list = new char[0][];     // граф
+        private static int[][] list = new int[0][];     // граф
 
         /*
          *   procedure FindEulerPath (V)
@@ -26,15 +26,9 @@ namespace ex8
 
         private static void Main(string[] args)
         {
-            // массив интовых чисел, где
-            // каждый элемент обозначает конкретную вершину
-            // а значение в нем - число, каждый бит которого отвечает за связь
-            // с другой вершиной
-            // таким образом, максимум вершин - 16
-
             // инициализация списка
-            var number = Ask.Num("Введите количество вершин (от 1 до 16): ", 1, 16);
-            list = new char[number][];
+            var number = Ask.Num("Введите количество вершин: ", 1);
+            list = new int[number][];
 
             // чтение списка
             for (var i = 0; i < number; i++)
@@ -43,7 +37,7 @@ namespace ex8
 
                 Console.Write("Введите через пробел вершины, с которыми связана ({0}): ", letter);
                 var relation = Console.ReadLine().Trim().Split(' ');       // читает и делит
-                list[i] = new char[relation.Length];                       // готовит массив
+                list[i] = new int[relation.Length];                       // готовит массив
                 var j = 0;
 
                 foreach (var point in relation)                     // для каждой из найденных
@@ -52,7 +46,7 @@ namespace ex8
                     if (point.Length > 1) throw new ArgumentException("Более одного символа вершина не именуется");
                     if ((int)point[0] - 'A'> 15) throw new ArgumentException("Превышение заданного алфавита");
 
-                    list[i][j++] = point[0];
+                    list[i][j++] = point[0] - 'A';
                 }
             }
 
