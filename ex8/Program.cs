@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using MyLib;
 
+// внимание! тут нет проверки ввода
+
 namespace ex8
 {
     internal class Program
@@ -69,39 +71,42 @@ namespace ex8
 
         private static void Main(string[] args)
         {
-            // инициализация списка
-            var number = Ask.Num("Введите количество вершин: ", 1);
-            list = new List<int>[number];
-
-            // чтение списка
-            for (var i = 0; i < number; i++)
+            try
             {
-                var letter = i + 1;
-                list[i] = new List<int>();
+                // инициализация списка
+                var number = Ask.Num("Введите количество вершин: ", 1);
+                list = new List<int>[number];
 
-                Console.Write("Введите через пробел вершины, с которыми связана ({0}): ", letter);
-                var relation = Console.ReadLine().Trim().Split(' ');       // читает и делит
-                var j = 0;
-
-                if (relation.Length == 0) continue;
-                foreach (var point in relation)                     // для каждой из найденных
+                // чтение списка
+                for (var i = 0; i < number; i++)
                 {
-                    if (point[0] == letter) throw new ArgumentException("Нет задачи графа с петлей");
-                    if (Int32.Parse(point) > number) throw new ArgumentException("Нет такой вершины");
+                    var letter = i + 1;
+                    list[i] = new List<int>();
 
-                    list[i].Add(Int32.Parse(point) - 1);
+                    Console.Write("Введите через пробел вершины, с которыми связана ({0}): ", letter);
+                    var relation = Console.ReadLine().Trim().Split(' ');       // читает и делит
+                    var j = 0;
+
+                    if (relation.Length == 0) continue;
+                    foreach (var point in relation)                     // для каждой из найденных
+                        list[i].Add(Int32.Parse(point) - 1);
                 }
+
+
+                var odd = Check().ToArray();
+                FindEulerPath((int)odd.GetValue(0));
+
+                if (eq) ans.Add((int)odd.GetValue(1));
+                else ans.RemoveAt(0);
+                // нужен еще случай, когда нечетные степени не были соединены
+
+                Console.WriteLine("Ответ: " + String.Join(", ", ans.ToArray()));
+            }
+            catch (ArgumentException e)
+            {
+                Console.WriteLine(e);
             }
 
-
-            var odd = Check().ToArray();
-            FindEulerPath((int)odd.GetValue(0));
-
-            if (eq) ans.Add((int)odd.GetValue(1));
-            else ans.RemoveAt(0);
-            // нужен еще случай, когда нечетные степени не были соединены
-            
-            Console.WriteLine("Ответ: " + String.Join(", ", ans.ToArray()));
             OC.Stay();
         }
     }
