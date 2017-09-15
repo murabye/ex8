@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using MyLib;
 
 // внимание! тут нет проверки ввода
+// TODO: прием из файла
+
 
 namespace ex8
 {
