@@ -2,114 +2,57 @@
 using System.Collections.Generic;
 using MyLib;
 
-// внимание! тут нет проверки ввода
-// TODO: прием из файла
-
-
 namespace ex8
 {
     internal class Program
     {
-        private static List<int>[] list = new List<int>[0];     // граф
-        private static List<int> ans = new List<int>();
-        private static bool eq = false;
-
-        private static void FindEulerPath(int num)
+        private static void Main()
         {
-            // где num - номер соответствующей вершины графа
-            for (var i = 0; i < list[num].Count; i++)
-                if (list[num][i] != -1)
-                {
-                    var path = list[num][i];
+            MyGraph graph;
+            switch (Ask.Menu("Ввод графа: ", "Случайный граф", "Ввод"))
+            {
+                case 1:
+                    graph = MyGraph.RandomGraph();
+                    break;
+                default:    // задача графа юзверем
+                    var countVertex = Ask.Num("Введите количество вершин в графе (от 1 до 26): ", 1, 26);
+                    graph = new MyGraph(countVertex);
 
-                    // удаление ребра из графа
-                    list[num][i] = -1;
-                    for (var j = 0; j < list[path].Count; j++)
+                    for (byte i = 0; i < countVertex; i++)
                     {
-                        if (list[path][j] != num) continue;
+                        Console.WriteLine("Вершина " + MyGraph.ToLetter(i));
+                        graph.ShowVertex(i);
 
-                        list[path][j] = -1;
-                        break;
+                        var countEdges = Ask.Num($"Введите количество вершин, с которыми нужно связать {i + 1}: ", 0, countVertex - 1);
+                        for (int j = 0; j < countEdges; j++)
+                        {
+                            var connectEdge = Ask.Num($"Введите номер вершины, с которой нужно связать {i + 1}: ", 1, countVertex) - 1;
+                            while (connectEdge == i || graph.NumEdge(i, connectEdge) != -1)
+                                connectEdge = Ask.Num("Петли и параллельные вершины в графе недопустимы", 1, countVertex) - 1;
+
+                            graph.Add(i, connectEdge);
+                        }
                     }
-
-                    FindEulerPath(path);
-                }
-            
-            ans.Add(num + 1);
-
-        }
-        private static Queue<int> Check()
-        {
-            var odd = new Queue<int>();          // нечетные вершины
-
-            // поиск нечетных вершин
-            for (var i = 0; i < list.Length; i++)
-                if (list[i].Count % 2 != 0)
-                    odd.Enqueue(i);
-            if (odd.Count != 2) throw new ArgumentException("В графе нет эйлеровой цепи");
-
-
-            var ch1 = odd.Dequeue();
-            var ch2 = odd.Peek();
-            odd.Enqueue(ch1);
-
-            // если нечетные вершины соединены, то удалить связь
-            for (var i = 0; i < list[ch1].Count; i++)
-            {
-                if (list[ch1][i] != ch2) continue;
-
-                list[ch1].Remove(ch2);
-                list[ch2].Remove(ch1);
-                eq = true;
-                return odd;
+                    break;
             }
+            Console.WriteLine();
+            graph.Show();
 
-            // иначе добавить связь
-            list[ch1].Add(ch2);
-            list[ch2].Add(ch1);
-
-            return odd;
-        }
-
-        private static void Main(string[] args)
-        {
-            try
-            {
-                // инициализация списка
-                var number = Ask.Num("Введите количество вершин: ", 1);
-                list = new List<int>[number];
-
-                // чтение списка
-                for (var i = 0; i < number; i++)
-                {
-                    var letter = i + 1;
-                    list[i] = new List<int>();
-
-                    Console.Write("Введите через пробел вершины, с которыми связана ({0}): ", letter);
-                    var relation = Console.ReadLine().Trim().Split(' ');       // читает и делит
-                    var j = 0;
-
-                    if (relation.Length == 0) continue;
-                    foreach (var point in relation)                     // для каждой из найденных
-                        list[i].Add(Int32.Parse(point) - 1);
-                }
-
-
-                var odd = Check().ToArray();
-                FindEulerPath((int)odd.GetValue(0));
-
-                if (eq) ans.Add((int)odd.GetValue(1));
-                else ans.RemoveAt(0);
-                // нужен еще случай, когда нечетные степени не были соединены
-
-                Console.WriteLine("Ответ: " + String.Join(", ", ans.ToArray()));
-            }
-            catch (ArgumentException e)
-            {
-                Console.WriteLine(e);
-            }
+            Console.WriteLine("Эйлеров путь: ");
+            Console.WriteLine(graph.EulerPath());
 
             OC.Stay();
         }
+
+
+
+
+
+
+
+
+
+
+        
     }
 }

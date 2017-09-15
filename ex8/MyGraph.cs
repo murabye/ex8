@@ -2,8 +2,9 @@
 
 namespace ex8
 {
-    class MyGraph
+    public class MyGraph
     {
+        private static Random r = new Random();
         private byte _countVertex;                              // кол-во вершин: от 1 до 26
         private byte[][] _graph;                                // способ представления графа: список вершин-связей
                                                                 //      27 мест, где на 27 позиции - текущее кол-во ребер, далее -
@@ -44,7 +45,7 @@ namespace ex8
             // по номеру возвращает букву в графе
 
             // безопасность метода
-            if (number < 1 || number > 26)
+            if (number < 0 || number > 26)
                 throw new ArgumentException("Не может быть более, чем 26 или менее, чем 1 вершин в графе", "number");
             
             return (char) ((int) 'A' + number);
@@ -56,16 +57,58 @@ namespace ex8
             var letterTem = (byte)((int) letter - (int) 'A');
                 
             // безопасность метода
-            if (letterTem < 1 || letterTem > 26)
+            if (letterTem < 0 || letterTem > 26)
                 throw new ArgumentException("Не может быть более, чем 26 или менее, чем 1 вершин в графе", "number");
 
             return letterTem;
         }
-        
-        // поддержка нижеследующих методов через цифры, не буквы
-        public int Last(int vertex)
+        public static MyGraph RandomGraph()
         {
-            return _graph[vertex][26] - 1;
+            var count = r.Next(3, 11);
+            var ans = new MyGraph(count);
+
+            for (int i = 0; i < count; i++)                             // для каждой вершины
+            {
+                var connective = r.Next(0, 3);                          // сгенерить кол-во связей
+                for (int j = 0; j < connective; j++)                    // для каждой связи
+                {
+                    var limit = 10;                                     // лимит в 10 попыток
+
+                    while (limit > 0)                                   // пока он не исчерпан
+                    {
+                        var connectVert = RandomVertex(count, i);       // сгенерить случайную вершину, кроме изначальной (петля)
+                        if (ans.NumEdge(i, connectVert) != -1)          // если связь с этой вершиной уже есть, то
+                            limit--;                                    // уменьшить лимин
+                        else
+                        {
+                            ans.Add(i, connectVert);                    // иначе добавить вершину
+                            break;                                      // выйти из цикла
+                        }
+                    }
+                }
+            }
+
+            return ans;
+        }
+
+        public void Show()
+        {
+            Console.WriteLine("Граф: \nВершина - вершины, связанные с ней, через запятую");
+
+            for (byte i = 0; i < _countVertex; i++)
+            {
+                Console.Write(ToLetter(i) + ": ");
+                for (byte j = 0; j < Last(i) + 1; j++)
+                    Console.Write(ToLetter(_graph[i][j]) + ", ");
+                Console.WriteLine();
+            }
+        }
+        public void ShowVertex(int vertex)
+        {
+            for (int i = 0; i < Last(vertex) + 1; i++)
+                Console.Write(_graph[vertex][i]);
+
+            Console.WriteLine();
         }
         public void Add(int vertexOne, int vertexTwo)
         {
@@ -75,21 +118,13 @@ namespace ex8
             _graph[vertexOne][Last(vertexOne)] = (byte)vertexTwo;
             _graph[vertexTwo][Last(vertexTwo)] = (byte)vertexOne;
         }
-        public char[] ShowVertex(int vertex)
-        {
-            var ans = new char[Last(vertex)];
-            for (int i = 0; i < ans.Length; i++)
-                ans[i] = MyGraph.ToLetter(_graph[vertex][i]);
-
-            return ans;
-        }
         public int NumEdge(int vertexSource, int vertex)
         {
             // если нет, то -1
             // проверка, есть ли данное ребро в вершине-источнике, вывод ее номера 
 
             int ans = -1;
-            for (int i = 0; i < Last(vertexSource); i++)
+            for (int i = 0; i < Last(vertexSource) + 1; i++)
             {
                 if (_graph[vertexSource][i] != vertex) continue;
                 ans = i;
@@ -98,52 +133,25 @@ namespace ex8
 
             return ans;
         }
-        public void Delete(int vertexOne, int vertexTwo)
-        {
-            _graph[vertexOne][NumEdge(vertexOne, vertexTwo)] = _graph[vertexOne][Last(vertexOne)];
-            _graph[vertexOne][26]--;
-            
-            _graph[vertexTwo][NumEdge(vertexTwo, vertexOne)] = _graph[vertexTwo][Last(vertexTwo)];
-            _graph[vertexTwo][26]--;
-        }
-        public bool CheckEven(out int indexOdd)
-        {
-            var countOdd = 0;
-            indexOdd = -1;
-
-            for (var i = 0; i < _graph.GetLength(0); i++)
-            {
-                if (_graph[i][26] % 2 != 1) continue;
-                countOdd++;
-                if (countOdd > 0) return false;
-                indexOdd = i;
-            }
-
-            return countOdd != 1;
-        }
-        public bool CheckConnective()
-        {
-            foreach (var vertex in _graph)
-                if (vertex[26] != 0) return false;
-
-            return true;
-        }
-
         public string EulerPath()
         {
             int indexOdd;
             var path = "";
 
-            if (!CheckEven(out indexOdd)) return "Не существует эйлерова пути"; 
+            // проверить на несвязанные вершины
+
+            if (!CheckEven(out indexOdd)) return "Не существует эйлерова пути: много нечетных вершин";
             indexOdd = indexOdd == -1 ? 0 : indexOdd;
 
             EulerFragment(indexOdd, ref path);
 
-            return !CheckConnective() ? "Не существует эйлерова пути" : path;
+            return !CheckConnective() ? "Не существует эйлерова пути: несвязный граф" : path;
         }
         public void EulerFragment(int startVertex, ref string path)
         {
-            path +=  startVertex.ToString() + " ";
+            path += ToLetter((byte)startVertex) + " ";
+
+            if (Last(startVertex) <= -1) return;
 
             var edge = _graph[startVertex][Last(startVertex)];              // вершина, с кт соединена стартовая
             Delete(startVertex, edge);
@@ -151,10 +159,48 @@ namespace ex8
             EulerFragment(edge, ref path);
         }
 
+        private int Last(int vertex)
+        {
+            return _graph[vertex][26] - 1;
+        }
+        private void Delete(int vertexOne, int vertexTwo)
+        {
+            _graph[vertexOne][NumEdge(vertexOne, vertexTwo)] = _graph[vertexOne][Last(vertexOne)];
+            _graph[vertexOne][26]--;
+            
+            _graph[vertexTwo][NumEdge(vertexTwo, vertexOne)] = _graph[vertexTwo][Last(vertexTwo)];
+            _graph[vertexTwo][26]--;
+        }
+        private bool CheckEven(out int indexOdd)
+        {
+            var countOdd = 0;
+            indexOdd = -1;
 
+            for (var i = 0; i < _countVertex; i++)
+            {
+                if (_graph[i][26] % 2 == 0) continue;
+                countOdd++;
+                if (countOdd > 2) return false;
+                indexOdd = i;
+            }
 
-        /*/
-         * генератор! в качестве меню 
-        /*/
+            return countOdd != 1;
+        }
+        private bool CheckConnective()
+        {
+            foreach (var vertex in _graph)
+                if (vertex[26] != 0) return false;
+
+            return true;
+        }
+        private static int RandomVertex(int count, int exception)
+        {
+            var ans = r.Next(count);
+
+            while (ans == exception)
+                ans = r.Next(count);
+
+            return ans;
+        }
     }
 }
