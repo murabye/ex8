@@ -65,7 +65,7 @@ namespace ex8
         // поддержка нижеследующих методов через цифры, не буквы
         public int Last(int vertex)
         {
-            return _graph[vertex][26];
+            return _graph[vertex][26] - 1;
         }
         public void Add(int vertexOne, int vertexTwo)
         {
@@ -106,11 +106,55 @@ namespace ex8
             _graph[vertexTwo][NumEdge(vertexTwo, vertexOne)] = _graph[vertexTwo][Last(vertexTwo)];
             _graph[vertexTwo][26]--;
         }
-        public void EulerPath() { }
+        public bool CheckEven(out int indexOdd)
+        {
+            var countOdd = 0;
+            indexOdd = -1;
 
-        /*
-         * генератор! в качестве меню
-         * найти эйлерову цепь (в том числе для проверки связности в графе и проверки четного кол-ва вершин)
-         * */
+            for (var i = 0; i < _graph.GetLength(0); i++)
+            {
+                if (_graph[i][26] % 2 != 1) continue;
+                countOdd++;
+                if (countOdd > 0) return false;
+                indexOdd = i;
+            }
+
+            return countOdd != 1;
+        }
+        public bool CheckConnective()
+        {
+            foreach (var vertex in _graph)
+                if (vertex[26] != 0) return false;
+
+            return true;
+        }
+
+        public string EulerPath()
+        {
+            int indexOdd;
+            var path = "";
+
+            if (!CheckEven(out indexOdd)) return "Не существует эйлерова пути"; 
+            indexOdd = indexOdd == -1 ? 0 : indexOdd;
+
+            EulerFragment(indexOdd, ref path);
+
+            return !CheckConnective() ? "Не существует эйлерова пути" : path;
+        }
+        public void EulerFragment(int startVertex, ref string path)
+        {
+            path +=  startVertex.ToString() + " ";
+
+            var edge = _graph[startVertex][Last(startVertex)];              // вершина, с кт соединена стартовая
+            Delete(startVertex, edge);
+
+            EulerFragment(edge, ref path);
+        }
+
+
+
+        /*/
+         * генератор! в качестве меню 
+        /*/
     }
 }
